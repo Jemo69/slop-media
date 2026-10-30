@@ -27,7 +27,8 @@ async function upload() {
 }
 async function list() {
   const pr = arg('pr', '');
-  const r = await fetch(`${BASE}/api/list${pr ? `?pr=${pr}` : ''}`);
+  const r = await fetch(`${BASE}/api/list${pr ? `?pr=${pr}` : ''}`, { headers: H });
+  if (r.status === 401) { console.error('unauthorized: check SLOP_MEDIA_TOKEN'); process.exit(1); }
   console.log(JSON.stringify(await r.json(), null, 2));
 }
 async function del() {
