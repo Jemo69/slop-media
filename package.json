@@ -1,0 +1,6 @@
+{
+  "name": "slop-media",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": { "slop-media": "./cli/slop-media.js" }
+}
