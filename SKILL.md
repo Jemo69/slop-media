@@ -8,7 +8,10 @@ SLOP_MEDIA_URL=https://slop-media-jemo69s-projects.vercel.app
 SLOP_MEDIA_TOKEN=<ask owner — same value as the app's UPLOAD_TOKEN>
 ```
 
-CLI lives in this repo at `cli/slop-media.js` (zero deps, node 18+). Or if installed globally, bare `slop-media` works.
+Install once (private repo, needs access): `npm install -g github:Jemo69/slop-media`. Zero deps, node 18+. Then persist config so env vars aren't needed every call:
+```bash
+slop-media setup --url https://slop-media-jemo69s-projects.vercel.app --token <SLOP_MEDIA_TOKEN>
+# stored in ~/.config/slop-media/config.json (mode 600). Env vars override it when set.
 
 ## Upload and embed in PR body
 ```bash
