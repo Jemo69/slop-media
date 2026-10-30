@@ -35,4 +35,5 @@ slop-media stage demo.mp4   # local check before uploading (no-op)
 - Prefer mp4 (H.264, e.g. `ffmpeg -pix_fmt yuv420p`). Max 100MB per file.
 - Raw bytes serve from R2, never proxied through Vercel (saves bandwidth).
 - Short redirect: `$SLOP_MEDIA_URL/v/<id>` → raw file.
-- Never print or commit `SLOP_MEDIA_TOKEN` / R2 keys. They live in Vercel env + `web/.env` (gitignored).
+- Auth: API (upload/list/delete) needs `SLOP_MEDIA_TOKEN` (Bearer). The home grid needs `?key=<GRID_KEY>` — ask the owner for both, they are siblings of the app's `UPLOAD_TOKEN`/`GRID_KEY` env. `/w/<id>` share-links stay public by design (safe to paste anywhere).
+- Never print or commit tokens / R2 keys. They live in Vercel env + `web/.env` (gitignored).
