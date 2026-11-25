@@ -6,8 +6,22 @@ Live app: https://slop-media-jemo69s-projects.vercel.app
 
 ## Install the CLI
 
+One-liner (no npm, drops a single zero-dep file in `~/.local/bin`):
+
 ```bash
-# Zero deps, node 18+
+curl -fsSL https://raw.githubusercontent.com/Jemo69/slop-media/main/install.sh | bash
+```
+
+With config set in one shot:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Jemo69/slop-media/main/install.sh \
+  | bash -s -- --url https://slop-media-jemo69s-projects.vercel.app --token <SLOP_MEDIA_TOKEN>
+```
+
+Or use npm:
+
+```bash
 npm install -g github:Jemo69/slop-media
 ```
 
