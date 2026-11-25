@@ -72,10 +72,10 @@ case ":$PATH:" in
 esac
 
 if [ "$NO_SETUP" -eq 1 ]; then
-  printf '\nnext: slop-media setup --url %s --token <UPLOAD_TOKEN>\n' "$URL"
+  printf '\nnext: slop-media setup --token <UPLOAD_TOKEN>   # URL defaults to %s\n' "$URL"
 elif [ -n "$TOKEN" ]; then
   "$BIN_DIR/slop-media" setup --url "$URL" --token "$TOKEN"
   printf '\ntry: slop-media upload demo.mp4 --pr 123 --repo owner/repo\n'
 else
-  printf '\nnext (copy the token from the owner):\n  %s setup --url %s --token <UPLOAD_TOKEN>\n' "$BIN_DIR/slop-media" "$URL"
+  printf '\nnext (copy the token from the owner):\n  %s setup --token <UPLOAD_TOKEN>   # URL defaults to %s\n' "$BIN_DIR/slop-media" "$URL"
 fi

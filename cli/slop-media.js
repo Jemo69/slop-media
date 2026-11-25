@@ -6,6 +6,8 @@ import { basename, join } from 'path';
 import { homedir } from 'os';
 
 const [cmd, ...rest] = process.argv.slice(2);
+// Canonical app URL. Used when `setup` is run without --url so the quick path is just `setup --token <token>`.
+const DEFAULT_URL = 'https://slop-media-jemo69s-projects.vercel.app';
 const CONF = join(homedir(), '.config', 'slop-media', 'config.json');
 function saved() {
   try { return existsSync(CONF) ? JSON.parse(readFileSync(CONF, 'utf8')) : {}; }
@@ -16,6 +18,15 @@ const BASE = (process.env.SLOP_MEDIA_URL || cfg.url || '').replace(/\/$/, '');
 const TOKEN = process.env.SLOP_MEDIA_TOKEN || cfg.token || '';
 const H = TOKEN ? { authorization: `Bearer ${TOKEN}` } : {};
 
+const CONTENT_TYPES = {
+  mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', m4v: 'video/x-m4v',
+  png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif'
+};
+function contentTypeFor(file) {
+  const ext = (file.split('.').pop() || '').toLowerCase();
+  return CONTENT_TYPES[ext] || (ext === 'mp4' || !ext ? 'video/mp4' : '');
+}
+
 function arg(name, d = '') {
   const i = rest.findIndex((a) => a === `--${name}`);
   if (i >= 0) return rest[i + 1] ?? d;
@@ -24,14 +35,14 @@ function arg(name, d = '') {
 }
 function needBase() {
   if (!BASE) {
-    console.error('not configured. run:\n  slop-media setup --url https://slop-media-jemo69s-projects.vercel.app --token <SLOP_MEDIA_TOKEN>\nor set SLOP_MEDIA_URL + SLOP_MEDIA_TOKEN env.');
+    console.error(`not configured. run:\n  slop-media setup --token <SLOP_MEDIA_TOKEN>\nor set SLOP_MEDIA_URL + SLOP_MEDIA_TOKEN env.`);
     process.exit(1);
   }
 }
 async function setup() {
-  const url = (arg('url') || '').replace(/\/$/, '');
-  const token = arg('token');
-  if (!url || !token) { console.error('usage: slop-media setup --url <app-url> --token <token>'); process.exit(1); }
+  const url = (arg('url') || DEFAULT_URL).replace(/\/$/, '');
+  const token = arg('token') || rest.find((a) => !a.startsWith('-'));
+  if (!token) { console.error('usage: slop-media setup [--url <app-url>] --token <token>\n       slop-media setup <token>   # uses the default app URL'); process.exit(1); }
   mkdirSync(join(homedir(), '.config', 'slop-media'), { recursive: true });
   writeFileSync(CONF, JSON.stringify({ url, token }, null, 2));
   chmodSync(CONF, 0o600);
@@ -40,12 +51,14 @@ async function setup() {
 async function upload() {
   needBase();
   const file = rest.find((a) => !a.startsWith('--'));
-  if (!file) { console.error('usage: slop-media upload demo.mp4 --pr 123 --repo owner/repo'); process.exit(1); }
+  if (!file) { console.error('usage: slop-media upload demo.mp4|shot.png --pr 123 --repo owner/repo'); process.exit(1); }
   let buf;
   try { buf = readFileSync(file); } catch { console.error(`no such file: ${file}`); process.exit(1); }
+  const type = contentTypeFor(file);
+  if (!type) { console.error(`unsupported file type: ${file} (use mp4/webm/mov or png/jpg/gif/webp/avif)`); process.exit(1); }
   const pr = arg('pr', '0'), repo = arg('repo', '');
   const q = new URLSearchParams({ filename: basename(file), pr, repo });
-  const r = await fetch(`${BASE}/api/upload?${q}`, { method: 'PUT', headers: { ...H, 'content-type': 'video/mp4' }, body: buf, duplex: 'half' });
+  const r = await fetch(`${BASE}/api/upload?${q}`, { method: 'PUT', headers: { ...H, 'content-type': type }, body: buf, duplex: 'half' });
   const j = await r.json();
   if (!r.ok) { console.error(r.status, j); process.exit(1); }
   console.log(`view: ${j.viewUrl}\nraw:  ${j.rawUrl}\n`);
@@ -71,5 +84,16 @@ if (cmd === 'setup') await setup();
 else if (cmd === 'upload') await upload();
 else if (cmd === 'list') await list();
 else if (cmd === 'delete') await del();
-else if (cmd === 'stage') console.log('stage: preview locally, then run upload. No-op OK.');
+else if (cmd === 'stage') {
+  const file = rest.find((a) => !a.startsWith('--'));
+  if (!file) { console.log('stage: pass a file to check (mp4/webm/mov or png/jpg/gif/webp/avif). No-op OK.'); }
+  else {
+    const type = contentTypeFor(file);
+    let size = -1;
+    try { size = readFileSync(file).length; } catch { console.error(`stage: no such file: ${file}`); process.exit(1); }
+    if (!type) { console.error(`stage: unsupported file type: ${file}`); process.exit(1); }
+    if (size > 100 * 1024 * 1024) { console.error(`stage: ${file} is ${size} bytes (>100MB max)`); process.exit(1); }
+    console.log(`stage: ${file} (${type}, ${size} bytes) looks good. Run upload to publish.`);
+  }
+}
 else { console.error('cmds: setup|upload|list|delete|stage'); process.exit(1); }

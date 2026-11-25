@@ -12,11 +12,11 @@ One-liner (no npm, drops a single zero-dep file in `~/.local/bin`):
 curl -fsSL https://raw.githubusercontent.com/Jemo69/slop-media/main/install.sh | bash
 ```
 
-With config set in one shot:
+With config set in one shot (the `--url` default is the live app, so `--token` is all you need):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Jemo69/slop-media/main/install.sh \
-  | bash -s -- --url https://slop-media-jemo69s-projects.vercel.app --token <SLOP_MEDIA_TOKEN>
+  | bash -s -- --token <SLOP_MEDIA_TOKEN>
 ```
 
 Or use npm:
@@ -28,7 +28,9 @@ npm install -g github:Jemo69/slop-media
 Persist config so env vars aren't needed every call:
 
 ```bash
-slop-media setup --url https://slop-media-jemo69s-projects.vercel.app --token <SLOP_MEDIA_TOKEN>
+slop-media setup --token <SLOP_MEDIA_TOKEN>          # uses the built-in app URL
+slop-media setup <SLOP_MEDIA_TOKEN>                  # same thing, shortest form
+slop-media setup --url https://other.host --token <SLOP_MEDIA_TOKEN>   # override
 # stored in ~/.config/slop-media/config.json (mode 600). Env vars override it when set.
 ```
 
